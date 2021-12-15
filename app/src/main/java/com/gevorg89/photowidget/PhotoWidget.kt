@@ -3,6 +3,7 @@ package com.gevorg89.photowidget
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
+import android.util.Log
 import android.widget.RemoteViews
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +43,10 @@ internal fun updateAppWidget(
             // Construct the RemoteViews object
             val views = RemoteViews(context.packageName, R.layout.photo_widget)
             val widgetBitmap = appWidgetId.toString().file(context).getBitmap()
-            views.setImageViewBitmap(R.id.appwidget_img, widgetBitmap)
+            //Log.d("compressImage no comp","${widgetBitmap.byteCount}")
+            //val compressedBitmap = compressImage(widgetBitmap, 4000)
+            //Log.d("compressImage comp","${compressedBitmap?.byteCount}")
+            //views.setImageViewBitmap(R.id.appwidget_img, widgetBitmap)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }

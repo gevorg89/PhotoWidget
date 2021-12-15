@@ -4,6 +4,7 @@ import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -50,6 +51,12 @@ class MainActivity : ComponentActivity() {
                             this@MainActivity,
                             photoViewModel.selectedWidgetId.toString()
                         )
+                        val bmp = file.getBitmap()
+                        compressImage(bmp, 4000000)?.let { compressedBitmap ->
+                            val tt = File(this@MainActivity.cacheDir(), "test")
+                            tt.writeBitmap(compressedBitmap, Bitmap.CompressFormat.PNG, 100)
+                            //file.writeBitmap(compressedBitmap, Bitmap.CompressFormat.PNG, 100)
+                        }
                         photoViewModel.addPhoto(file)
                         this@MainActivity.updateWidget()
                     }
