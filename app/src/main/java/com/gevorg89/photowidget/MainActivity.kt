@@ -4,7 +4,6 @@ import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -32,9 +31,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gevorg89.photowidget.ui.theme.PhotoWidgetTheme
+import id.zelory.compressor.Compressor
+import id.zelory.compressor.constraint.resolution
+import id.zelory.compressor.constraint.size
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class MainActivity : ComponentActivity() {
@@ -46,19 +49,24 @@ class MainActivity : ComponentActivity() {
             if (result.resultCode == Activity.RESULT_OK) {
                 val data: Uri? = result.data?.data
                 data?.let {
-                    CoroutineScope(Dispatchers.Main.immediate).launch {
+                    CoroutineScope(Dispatchers.IO).launch {
                         val file = it.toFileFromUri(
                             this@MainActivity,
                             photoViewModel.selectedWidgetId.toString()
                         )
-                        val bmp = file.getBitmap()
-                        compressImage(bmp, 4000000)?.let { compressedBitmap ->
-                            val tt = File(this@MainActivity.cacheDir(), "test")
-                            tt.writeBitmap(compressedBitmap, Bitmap.CompressFormat.PNG, 100)
-                            //file.writeBitmap(compressedBitmap, Bitmap.CompressFormat.PNG, 100)
+
+                        Compressor.compress(this@MainActivity, file) {
+                            resolution(1920, 1080)
+                            //quality(80)
+                            //format(Bitmap.CompressFormat.WEBP)
+                            size(10_000_000) // 2 MB
+                            //destination(file)
                         }
-                        photoViewModel.addPhoto(file)
-                        this@MainActivity.updateWidget()
+
+                        withContext(Dispatchers.Main.immediate) {
+                            photoViewModel.addPhoto(file)
+                            this@MainActivity.updateWidget()
+                        }
                     }
                 }
             }

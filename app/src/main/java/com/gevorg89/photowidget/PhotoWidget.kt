@@ -1,13 +1,13 @@
 package com.gevorg89.photowidget
 
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
-import android.util.Log
+import android.content.Intent
+import android.view.View
 import android.widget.RemoteViews
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import java.io.File
 
 /**
  * Implementation of App Widget functionality.
@@ -33,22 +33,30 @@ class PhotoWidget : AppWidgetProvider() {
     }
 }
 
+private val separator = File.separator
+
+private fun cachePath(context: Context, widgetId: Int) =
+    "${context.cacheDir.path}${separator}compressor$separator$widgetId"
+
 internal fun updateAppWidget(
     context: Context,
     appWidgetManager: AppWidgetManager,
     appWidgetId: Int
 ) {
-    if (appWidgetId.toString().file(context).exists()) {
-        CoroutineScope(Dispatchers.Main.immediate).launch {
-            // Construct the RemoteViews object
-            val views = RemoteViews(context.packageName, R.layout.photo_widget)
-            val widgetBitmap = appWidgetId.toString().file(context).getBitmap()
-            //Log.d("compressImage no comp","${widgetBitmap.byteCount}")
-            //val compressedBitmap = compressImage(widgetBitmap, 4000)
-            //Log.d("compressImage comp","${compressedBitmap?.byteCount}")
-            //views.setImageViewBitmap(R.id.appwidget_img, widgetBitmap)
-
-            appWidgetManager.updateAppWidget(appWidgetId, views)
-        }
+    val views = RemoteViews(context.packageName, R.layout.photo_widget)
+    val file = File(cachePath(context, appWidgetId))
+    val addButton = R.id.appwidget_add
+    if (file.exists()) {
+        views.setViewVisibility(addButton, View.GONE)
+        views.setViewVisibility(R.id.appwidget_progress, View.VISIBLE)
+        val widgetBitmap = file.getBitmap()
+        views.setImageViewBitmap(R.id.appwidget_img, widgetBitmap)
+        views.setViewVisibility(R.id.appwidget_progress, View.GONE)
+    } else {
+        views.setViewVisibility(addButton, View.VISIBLE)
+        val configIntent = Intent(context, MainActivity::class.java)
+        val configPendingIntent = PendingIntent.getActivity(context, 0, configIntent, 0)
+        views.setOnClickPendingIntent(addButton, configPendingIntent)
     }
+    appWidgetManager.updateAppWidget(appWidgetId, views)
 }

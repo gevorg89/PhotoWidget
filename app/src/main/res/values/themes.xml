@@ -25,7 +25,7 @@
 
     <style name="Theme.PhotoWidget.AppWidgetContainerParent" parent="@android:style/Theme.DeviceDefault">
         <item name="appWidgetRadius">8dp</item>
-        <item name="appWidgetPadding">4dp</item>
+        <item name="appWidgetPadding">0dp</item>
         <item name="appWidgetInnerRadius">4dp</item>
     </style>
 
